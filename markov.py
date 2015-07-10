@@ -4,27 +4,32 @@ import string
 
 class SimpleMarkovGenerator(object):
 
-    def read_files(self, filenames):
+    def __init__(self, filenames):
+        self.filenames = filenames
+
+    def read_files(self):
         """Given a list of files, make chains from them."""
+        result = []
+        for f in self.filenames:
+            text_file = open(f).read()
+            corpus = text_file.split()
+            result += corpus
+        self.result = result
+        return self
 
-        # your code here
-        text_file = open(filenames).read()
-        corpus = text_file.split()
-        return corpus
 
-
-    def make_chains(self, corpus, n=2):
+    def make_chains(self, n=2):
         """Takes input text as string; stores chains."""
 
         # your code here
-        length_full_text = len(corpus)-n
+        length_full_text = len(self.result)-n
         ngrams = {}
         for i in range(length_full_text):
             pre_tup = []
             for j in range(n):
-                pre_tup.append(corpus[i+j])
+                pre_tup.append(self.result[i+j])
             tup = tuple(pre_tup)
-            ngrams.setdefault(tup,[]).append(corpus[i+n])
+            ngrams.setdefault(tup,[]).append(self.result[i+n])
 
         return ngrams
 
@@ -49,8 +54,8 @@ class SimpleMarkovGenerator(object):
             next = result[-1]
 
 
-        return " ".join(result)     
-
+        return " ".join(result)
+ 
 # Create a TweetableMarkovGenerator. 
 # This should subclass your Markov generator, 
 # but will need to either override or add a method 
@@ -59,12 +64,18 @@ class SimpleMarkovGenerator(object):
 # change a method in the base class methods;
 # there are lots of different ways you could solve this problem!)
 
-class TweetableMarkovGenerator(SimpleMarkovGenerator):
+# class UpperMixin(object):
+#     def uppercase(self):
+#         self = self.upper()
+#         return self
 
+
+
+class TweetableMarkovGenerator(SimpleMarkovGenerator):
     def make_text(self, chains, n=2):
         evalu = super(TweetableMarkovGenerator, self).make_text(chains, n=2)
         while len(evalu) > 140:
-            evalu = super(TweetableMarkovGenerator, self).make_text(chains, n=2)
+             evalu = super(TweetableMarkovGenerator, self).make_text(chains, n=2)
         return evalu
 
 
@@ -75,12 +86,13 @@ if __name__ == "__main__":
 
     # we should get list of filenames from sys.argv
     functions = sys.argv[0]
-    text = sys.argv[1]
+    text = sys.argv[1:]
+    
     # we should make an instance of the class
-    generator1 = TweetableMarkovGenerator()
+    generator1 = TweetableMarkovGenerator(text)
     # we should call the read_files method with the list of filenames
-    chain_list = generator1.read_files(text)
-    chain_dict = generator1.make_chains(chain_list)
+    chain_dict = generator1.read_files().make_chains()
+
     # we should call the make_text method 5x
     for i in range(1):
         print generator1.make_text(chain_dict)
